@@ -1,14 +1,16 @@
 using Log.Api.Data;
 using Log.Api.Persistence;
 using Log.Api.Services;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Logging.ApplicationInsights;
+//using Microsoft.Extensions.Logging.Console;
+using Serilog;
+using Serilog.Formatting.Compact;
+using Serilog.Sinks.ApplicationInsights;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -29,33 +31,32 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5043", "https://localhost", "https://app-frontend-test-logging.azurewebsites.net")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+        policy.AllowAnyOrigin()
+            .AllowAnyHeader();
     });
 });
+
+//Takes connectionstring from appsettings - ApplicationInsights section
+builder.Services.AddApplicationInsightsTelemetry();
+
+builder.Host.UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration
+    .ReadFrom.Configuration(hostingContext.Configuration)
+    .WriteTo.ApplicationInsights(new TelemetryConfiguration
+    {
+        ConnectionString = hostingContext.Configuration.GetValue<string>("ApplicationInsights:ConnectionString")
+    },TelemetryConverter.Traces)
+);
 
 // Adding Logging Providers
 builder.Services.AddSingleton(typeof(ILoggerAdapter<>), typeof(LoggerAdapter<>));
 
-builder.Services.AddApplicationInsightsTelemetry();
+//builder.Logging.AddApplicationInsights(Configuration.GetValue<string>("ApplicationInsights:ConnectionString"));
 
-builder.Logging.AddApplicationInsights(
-    configureTelemetryConfiguration: (config) => 
-        config.ConnectionString = builder.Configuration.GetValue<string>("ApplicationInsights:ConnectionString"),
-    configureApplicationInsightsLoggerOptions: (options) =>
-    {
-        options.IncludeScopes = true;
-        options.TrackExceptionsAsExceptionTelemetry = true;
-    }
-);
-
-builder.Logging.AddSimpleConsole(options =>
-{
-    options.ColorBehavior = LoggerColorBehavior.Enabled;
-    options.IncludeScopes = true;
-});
+// builder.Logging.AddSimpleConsole(options =>
+// {
+//     options.ColorBehavior = LoggerColorBehavior.Enabled;
+//     options.IncludeScopes = true;
+// });
 
 var app = builder.Build();
 

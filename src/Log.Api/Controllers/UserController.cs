@@ -11,13 +11,12 @@ public class UserController : ControllerBase
 {
     private readonly IUserRepository _userRepository;
     private readonly ILoggerAdapter<UserController> _logger;
-
+    
     public UserController(IUserRepository userRepository, ILoggerAdapter<UserController> logger)
     {
         _userRepository = userRepository;
         _logger = logger;
     }
-    
     
     [HttpGet("/health")]
     public async Task<IActionResult> GetHealthAsync()
@@ -60,9 +59,18 @@ public class UserController : ControllerBase
             Lastname = request.Lastname,
             Age = request.Age
         };
-        await _userRepository.AddAsync(user);
-        _logger.LogInformation("Successfully created user: {UserId}", user.Id);
-        return Created("", user);
+
+        try
+        {
+            await _userRepository.AddAsync(user);
+            _logger.LogInformation("Successfully created user: {@user}", user);
+            return Created("", user);
+        }
+        catch (Exception e)
+        {
+            _logger.LogInformation("Failed creating user: {@user}", user);
+            throw;
+        }
     }
     
     

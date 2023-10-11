@@ -2,40 +2,40 @@
 
 public class LoggerAdapter<T> : ILoggerAdapter<T>
 {
-    private readonly ILogger<T> _logger;
+    private readonly Serilog.ILogger _logger;
 
-    public LoggerAdapter(ILogger<T> logger)
+    public LoggerAdapter(Serilog.ILogger logger)
     {
         _logger = logger;
     }
     
     public void LogDebug(string? message, params object?[] args)
     {
-        _logger.LogDebug(message, args);
+        _logger.Debug(message, args);
     }
     
     public void LogCritical(string? message, params object?[] args)
     {
-        _logger.LogCritical(message, args);
+        _logger.Fatal(message, args);
     }
     
     public void LogTrace(string? message, params object?[] args)
     {
-        _logger.LogTrace(message, args);
+        _logger.Verbose(message, args);
     }
 
     public void LogInformation(string? message, params object?[] args)
     {
-        _logger.LogInformation(message, args);
+        _logger.Information(message, args);
     }
 
     public void LogError(string? message, params object?[] args)
     {
-        _logger.LogError(message, args);
+        _logger.Error(message, args);
     }
 
     public void LogWarning(string? message, params object?[] args)
     {
-        _logger.LogWarning(message, args);
+        _logger.Warning(message, args);
     }
 }
