@@ -1,17 +1,11 @@
 using Log.Api.Data;
-using Log.Api.Options;
 using Log.Api.Persistence;
 using Log.Api.Services;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Logging.Console;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
-
-//Add configuration
-builder.Services.Configure<ApplicationInsightsOptions>(
-    builder.Configuration.GetSection(ApplicationInsightsOptions.Position));
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -53,14 +47,6 @@ builder.Host.UseSerilog((hostingContext, loggerConfiguration) => loggerConfigura
 
 // Adding Logging Providers
 builder.Services.AddSingleton(typeof(ILoggerAdapter<>), typeof(LoggerAdapter<>));
-
-//builder.Logging.AddApplicationInsights(Configuration.GetValue<string>("ApplicationInsights:ConnectionString"));
-
-// builder.Logging.AddSimpleConsole(options =>
-// {
-//     options.ColorBehavior = LoggerColorBehavior.Enabled;
-//     options.IncludeScopes = true;
-// });
 
 builder.Services.AddSingleton<ITelemetryHandler, TelemetryHandler>();
 

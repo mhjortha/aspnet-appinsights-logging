@@ -1,20 +1,13 @@
-﻿using Log.Api.Options;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.ApplicationInsights;
 
 namespace Log.Api.Services;
 
 public class TelemetryHandler : ITelemetryHandler
 {
     private readonly TelemetryClient _telemetryClient;
-    public TelemetryHandler(IOptions<ApplicationInsightsOptions> options)
+    public TelemetryHandler(TelemetryClient telemetryClient)
     {
-        _telemetryClient = new TelemetryClient(new TelemetryConfiguration()
-        {
-            ConnectionString = options.Value.ConnectionString
-        });
+        _telemetryClient = telemetryClient;
     }
     public async Task TrackMetricAsync(string metricName, double metricValue, CancellationToken cancellationToken)
     {

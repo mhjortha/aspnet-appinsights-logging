@@ -69,6 +69,7 @@ public class UserController : ControllerBase
         {
             await _userRepository.AddAsync(user);
             await _telemetryHandler.TrackEventAsync("UserCreated", user, cancellationToken);
+            await _telemetryHandler.TrackMetricAsync("UserCreated", 5, cancellationToken);
             _logger.LogInformation("Successfully created user: {@user}", user);
             return Created("", user);
         }
