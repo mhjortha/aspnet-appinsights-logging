@@ -2,5 +2,6 @@
 
 public interface ITelemetryHandler
 {
-    Task TrackEvent<T>(string eventName, T model, CancellationToken cancellationToken);
+    Task TrackEventAsync<T>(string eventName, T model, CancellationToken cancellationToken);
+    Task TrackMetricAsync(string metricName, double metricValue, CancellationToken cancellationToken);
 }
