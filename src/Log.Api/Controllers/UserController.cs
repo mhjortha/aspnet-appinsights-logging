@@ -11,11 +11,16 @@ public class UserController : ControllerBase
 {
     private readonly IUserRepository _userRepository;
     private readonly ILoggerAdapter<UserController> _logger;
+    private readonly ITelemetryHandler _telemetryHandler;
     
-    public UserController(IUserRepository userRepository, ILoggerAdapter<UserController> logger)
+    public UserController(
+        IUserRepository userRepository, 
+        ILoggerAdapter<UserController> logger, 
+        ITelemetryHandler telemetryHandler)
     {
         _userRepository = userRepository;
         _logger = logger;
+        _telemetryHandler = telemetryHandler;
     }
     
     [HttpGet("/health")]
@@ -51,7 +56,7 @@ public class UserController : ControllerBase
     
     
     [HttpPost]
-    public async Task<IActionResult> AddAsync([FromBody]CreateUserRequest request)
+    public async Task<IActionResult> AddAsync([FromBody]CreateUserRequest request, CancellationToken cancellationToken)
     {
         var user = new User
         {
@@ -63,6 +68,7 @@ public class UserController : ControllerBase
         try
         {
             await _userRepository.AddAsync(user);
+            await _telemetryHandler.TrackEvent("UserCreated", user, cancellationToken);
             _logger.LogInformation("Successfully created user: {@user}", user);
             return Created("", user);
         }
@@ -86,7 +92,7 @@ public class UserController : ControllerBase
         }
         
         await _userRepository.DeleteAsync(user);
-        _logger.LogInformation("Successfully deleted user {UserId}", user.Id);
+        _logger.LogInformation("Successfully deleted user {@user}", user);
         return NoContent();
     }
 }

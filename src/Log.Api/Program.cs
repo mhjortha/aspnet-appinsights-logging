@@ -1,14 +1,17 @@
 using Log.Api.Data;
+using Log.Api.Options;
 using Log.Api.Persistence;
 using Log.Api.Services;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.EntityFrameworkCore;
 //using Microsoft.Extensions.Logging.Console;
 using Serilog;
-using Serilog.Formatting.Compact;
-using Serilog.Sinks.ApplicationInsights;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Add configuration
+builder.Services.Configure<ApplicationInsightsOptions>(
+    builder.Configuration.GetSection(ApplicationInsightsOptions.Position));
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -32,7 +35,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.AllowAnyOrigin()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
@@ -57,6 +61,8 @@ builder.Services.AddSingleton(typeof(ILoggerAdapter<>), typeof(LoggerAdapter<>))
 //     options.ColorBehavior = LoggerColorBehavior.Enabled;
 //     options.IncludeScopes = true;
 // });
+
+builder.Services.AddSingleton<ITelemetryHandler, TelemetryHandler>();
 
 var app = builder.Build();
 
